@@ -28,7 +28,23 @@ app.get("/events", async(req, res) => {
     limit = Number(req.query.limit);
   }
 
+  if (limit > 10){
+    return res.status(400).json({
+      message: "limit must not be more than 10"
+    })
+  }
+
     const offset = (page - 1) * limit;
+
+    const status = req.query.status
+    const allowedStatuses = ["draft", "published", "cancelled"];
+
+  if (status && !allowedStatuses.includes(status)) {
+    return res.status(400).json({
+      message: "status must be draft, published or cancelled",
+    });
+  }
+
   try {
   const result = await connectionPool.query(
     `
@@ -47,10 +63,10 @@ app.get("/events", async(req, res) => {
     });
 
   } catch (error) {
-    console.error("[GET /products] database error:", error.message);
+    console.error("[GET /event] database error:", error.message);
 
     return res.status(500).json({
-      message: "Server could not get products",
+      message: "Server could not get event",
     });
   }
 });

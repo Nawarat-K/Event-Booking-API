@@ -54,11 +54,11 @@ export function validateEventBody(req, res, next) {
   // TODO 6: เช็ก status ว่าต้องเป็น draft, published หรือ cancelled เท่านั้น
   // hint: allowedStatuses.includes(event.status)
   // message: "status ต้องเป็น draft, published หรือ cancelled เท่านั้น"
-//   if (!allowedStatuses.includes(event.status)) {
-//   return res.status(400).json({ 
-//     message: "status ต้องเป็น draft, published หรือ cancelled เท่านั้น" 
-//   });
-// }
+  if (!allowedStatuses.includes(event.status)) {
+  return res.status(400).json({ 
+    message: "status ต้องเป็น draft, published หรือ cancelled เท่านั้น" 
+  });
+}
 
   next();
 }
