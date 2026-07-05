@@ -70,7 +70,7 @@ app.get("/events/:eventId", validateEventId, async(req,res) => {
     )
     console.log(`Get event row ${result.rows.length}`)
 
-    if (!result) {
+    if (result.rows.length === 0) {
       console.log("Event not found");
       return res.status(404).json({
         message: "Event not found"
@@ -122,7 +122,7 @@ app.put("/events/:eventId", async(req,res) => {
     )
     console.log(`Get event row ${result.rows.length}`)
 
-    if (!result) {
+    if (result.rows.length === 0) {
       console.log("Event not found");
       return res.status(404).json({
         message: "Event not found"
@@ -186,7 +186,7 @@ app.delete("/events/:eventId", async(req,res) => {
     )
     console.log(`Get event row ${result.rows.length}`)
 
-    if (!result) {
+    if (result.rows.length === 0) {
       console.log("Event not found")
       return res.status(404).json({
         message: "Event not found"
