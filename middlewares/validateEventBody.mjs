@@ -37,10 +37,28 @@ export function validateEventBody(req, res, next) {
 
   // TODO 5: เช็ก capacity ว่าต้องเป็น integer และมากกว่า 0
   // message: "capacity ต้องเป็นจำนวนเต็ม และต้องมากกว่า 0"
+ if (event.capacity <= 0 ||  !Number.isInteger(event.capacity)){
+    return res.status(400).json({
+      message: "capacity ต้องเป็นจำนวนเต็ม และต้องมากกว่า 0"
+    })
+  }
+
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      message: "Invalid request body",
+      errors: errors,
+    });
+  }
 
   // TODO 6: เช็ก status ว่าต้องเป็น draft, published หรือ cancelled เท่านั้น
   // hint: allowedStatuses.includes(event.status)
   // message: "status ต้องเป็น draft, published หรือ cancelled เท่านั้น"
+//   if (!allowedStatuses.includes(event.status)) {
+//   return res.status(400).json({ 
+//     message: "status ต้องเป็น draft, published หรือ cancelled เท่านั้น" 
+//   });
+// }
 
   next();
 }

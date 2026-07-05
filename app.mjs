@@ -55,7 +55,7 @@ app.get("/events", async(req, res) => {
   }
 });
 
-app.get("/events/:eventId", async(req,res) => {
+app.get("/events/:eventId", validateEventId, async(req,res) => {
   const eventId = req.params.eventId
   console.log(`event ID: ${eventId}`);
 
@@ -69,14 +69,67 @@ app.get("/events/:eventId", async(req,res) => {
       [eventId]
     )
     console.log(`Get event row ${result.rows.length}`)
+
     if (!result) {
       console.log("Event not found");
-      return res.status(404),json({
+      return res.status(404).json({
         message: "Event not found"
       })
     }
     return res.status(200).json({
       message: "Get event successfully",
+      data: result.rows[0]
+    })
+  }
+  catch (error) {
+    console.log(`error ${error}`);
+    return res.status(500).json({
+      message: "Server could not get event"
+    })
+    
+  }
+})
+
+app.put("/events/:eventId", async(req,res) => {
+  const eventId = req.params.eventId
+  console.log(`event ID: ${eventId}`);
+
+  const updateEvent = {
+    ...req.body,
+  }
+
+  try {
+    const result = await connectionPool.query(
+      `
+      UPDATE events
+      SET title = $1,
+          description = $2,
+          location = $3,
+          event_date = $4,
+          capacity = $5,
+          status = $6
+      WHERE event_id = $7
+      `,
+      [
+        updateEvent.title,
+        updateEvent.description,
+        updateEvent.location,
+        updateEvent.event_date,
+        updateEvent.capacity,
+        updateEvent.status,
+        eventId
+      ]
+    )
+    console.log(`Get event row ${result.rows.length}`)
+
+    if (!result) {
+      console.log("Event not found");
+      return res.status(404).json({
+        message: "Event not found"
+      })
+    }
+    return res.status(200).json({
+      message: "Updated event successfully",
       data: result.rows[0]
     })
   }
@@ -118,6 +171,46 @@ app.post("/events", validateEventBody, async(req, res) => {
     data: newEvent
   })
 })
+
+app.delete("/events/:eventId", async(req,res) => {
+  const eventId = req.params.eventId
+  console.log(`event ID: ${eventId}`);
+
+  try {
+    const result = await connectionPool.query(
+      `
+      DELETE FROM events
+      WHERE event_id = $1
+      `,
+      [eventId]
+    )
+    console.log(`Get event row ${result.rows.length}`)
+
+    if (!result) {
+      console.log("Event not found")
+      return res.status(404).json({
+        message: "Event not found"
+      }) 
+    }
+
+    return res.status(200).json({
+      message: "Deleted event successfully",
+      data: result.rows[0]
+    })
+  }
+  catch (error) {
+    console.log(`error ${error}`);
+    return res.status(500).json({
+      message: "Server could not get event"
+    })
+    
+  }
+})
+
+app.get("/events/:eventId/registrations"), (req, res) => {
+    const eventId = req.params.eventId
+    console.log(`event ID: ${eventId}`);
+}
 
 app.listen(port, () => {
   console.log(`Event Booking API running at http://localhost:${port}`);
