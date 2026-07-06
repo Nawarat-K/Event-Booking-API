@@ -3,6 +3,7 @@ const allowedStatuses = ["draft", "published", "cancelled"];
 export function validateEventBody(req, res, next) {
   const event = req.body;
 
+  // [DF Comment] ใช้ event = req.body แล้วเอาไปอ่านต่อแบบนี้ดีครับ ทำให้ validation ด้านล่างสั้นลง
   // TODO 1: เช็ก title ว่าต้องส่งมา
   // message: "กรุณาส่งข้อมูล title เข้ามาด้วย"
   if (!event.title){
@@ -44,6 +45,7 @@ export function validateEventBody(req, res, next) {
   }
 
 
+  // [DF Comment] ตรงนี้ errors ยังไม่ได้ประกาศไว้ครับ ถ้า body ถูกต้องจนมาถึงบรรทัดนี้ จะเกิด ReferenceError ก่อนเช็ก status
   if (errors.length > 0) {
     return res.status(400).json({
       message: "Invalid request body",
@@ -54,6 +56,7 @@ export function validateEventBody(req, res, next) {
   // TODO 6: เช็ก status ว่าต้องเป็น draft, published หรือ cancelled เท่านั้น
   // hint: allowedStatuses.includes(event.status)
   // message: "status ต้องเป็น draft, published หรือ cancelled เท่านั้น"
+  // [DF Comment] status validation ใช้ allowedStatuses.includes ถูกแล้วครับ อ่านง่ายและตรงกับ requirement
   if (!allowedStatuses.includes(event.status)) {
   return res.status(400).json({ 
     message: "status ต้องเป็น draft, published หรือ cancelled เท่านั้น" 

@@ -24,6 +24,7 @@ app.get("/events", async(req, res) => {
   let page = 1;
   let limit = 5;
 
+  // [DF Comment] limit เริ่ม validate ได้ดีแล้วครับ แต่ page ยังไม่ได้อ่านจาก req.query.page เลย ตอนนี้ page=2 จะยังได้ข้อมูลหน้าแรกอยู่
   if (req.query.limit !== undefined){
     limit = Number(req.query.limit);
   }
@@ -39,6 +40,7 @@ app.get("/events", async(req, res) => {
     const status = req.query.status
     const allowedStatuses = ["draft", "published", "cancelled"];
 
+  // [DF Comment] เช็ก status ที่รับเข้ามาถูกทางแล้วครับ ขั้นต่อไปคือต้องเอา status ไปใส่ใน WHERE ของ query ด้วย
   if (status && !allowedStatuses.includes(status)) {
     return res.status(400).json({
       message: "status must be draft, published or cancelled",
@@ -59,6 +61,7 @@ app.get("/events", async(req, res) => {
 
     return res.status(200).json({
       message: "Get events successfully",
+      // [DF Comment] response ตอนนี้ยังขาด pagination object เช่น page, limit, totalItems, totalPages ตามโจทย์ pagination
       data: result.rows,
     });
 
@@ -72,6 +75,7 @@ app.get("/events", async(req, res) => {
 });
 
 app.get("/events/:eventId", validateEventId, async(req,res) => {
+  // [DF Comment] middleware แปลง id ไว้ที่ req.eventId แล้วครับ ใช้ค่านั้นต่อได้เลย จะได้ไม่ต้องใช้ string จาก params ซ้ำ
   const eventId = req.params.eventId
   console.log(`event ID: ${eventId}`);
 
@@ -106,6 +110,7 @@ app.get("/events/:eventId", validateEventId, async(req,res) => {
   }
 })
 
+// [DF Comment] route update ควรใช้ validateEventId และ validateEventBody เหมือน GET by id กับ POST เพื่อกัน id/body ที่ไม่ถูกต้องก่อนเข้า database
 app.put("/events/:eventId", async(req,res) => {
   const eventId = req.params.eventId
   console.log(`event ID: ${eventId}`);
@@ -115,6 +120,7 @@ app.put("/events/:eventId", async(req,res) => {
   }
 
   try {
+    // [DF Comment] ถ้าจะอ่าน result.rows[0] หลัง UPDATE ต้องใส่ RETURNING * ไม่งั้น rows จะว่าง ถึง update สำเร็จก็จะเข้า not found
     const result = await connectionPool.query(
       `
       UPDATE events
@@ -168,6 +174,8 @@ app.post("/events", validateEventBody, async(req, res) => {
     status: req.body.status
   }
 
+  // [DF Comment] create endpoint ควรครอบ try/catch ด้วยครับ ถ้า database error ตอน insert ตอนนี้ request จะหลุดเป็น error กลางทาง
+  // [DF Comment] ใช้ RETURNING * หรือ RETURNING event_id จะช่วยให้ response ส่ง id ที่ database สร้างจริงกลับไปได้
   await connectionPool.query(
     `
     INSERT INTO events (title, description, location, event_date, capacity, status)
@@ -188,11 +196,13 @@ app.post("/events", validateEventBody, async(req, res) => {
   })
 })
 
+// [DF Comment] route delete ควรใส่ validateEventId ด้วยครับ จะได้ reject /events/abc ก่อนเอาไป query
 app.delete("/events/:eventId", async(req,res) => {
   const eventId = req.params.eventId
   console.log(`event ID: ${eventId}`);
 
   try {
+    // [DF Comment] DELETE ตรงนี้ก็ต้องใช้ RETURNING * ถ้าจะเช็ก result.rows.length และส่งข้อมูลที่ลบกลับไป
     const result = await connectionPool.query(
       `
       DELETE FROM events
@@ -223,6 +233,7 @@ app.delete("/events/:eventId", async(req,res) => {
   }
 })
 
+// [DF Comment] ตรงนี้วงเล็บปิดเร็วไปครับ handler ไม่ได้ถูกส่งเข้า app.get ทำให้ bonus route ยังไม่ถูก register จริง
 app.get("/events/:eventId/registrations"), (req, res) => {
     const eventId = req.params.eventId
     console.log(`event ID: ${eventId}`);
